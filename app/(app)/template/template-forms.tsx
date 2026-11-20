@@ -31,7 +31,7 @@ export function TemplateUpload() {
   return (
     <form ref={ref} onSubmit={onSubmit} className="space-y-4">
       <input type="file" name="file" accept=".pdf,.doc,.docx,.tex,.odt,.txt,.md" required className="block w-full rounded-xl border border-dashed border-white/20 bg-black/30 p-4 text-sm text-muted file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-black" />
-      <Button disabled={busy}>{busy ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} {busy ? "Uploading…" : "Upload (max 10 MB)"}</Button>
+      <Button disabled={busy}>{busy ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} {busy ? "Uploading…" : "Upload (max 4 MB)"}</Button>
       {msg && <p className={`text-sm ${msg.ok ? "text-emerald-400" : "text-red-400"}`}>{msg.text}</p>}
     </form>
   );

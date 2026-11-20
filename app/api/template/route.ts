@@ -3,7 +3,7 @@ import { Binary } from "mongodb";
 import { isAuthed } from "@/lib/auth";
 import { extractText, findPlaceholders, getTemplate, templateCol } from "@/lib/template";
 
-const MAX = 10 * 1024 * 1024;
+const MAX = 4 * 1024 * 1024; // Vercel rejects request bodies over ~4.5 MB
 
 export async function GET() {
   if (!(await isAuthed())) return new NextResponse("Unauthorized", { status: 401 });
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   if (!(await isAuthed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const file = (await req.formData()).get("file");
   if (!(file instanceof File) || file.size === 0) return NextResponse.json({ error: "Choose a file first." }, { status: 400 });
-  if (file.size > MAX) return NextResponse.json({ error: "File is larger than 10 MB." }, { status: 400 });
+  if (file.size > MAX) return NextResponse.json({ error: "File is larger than 4 MB." }, { status: 400 });
   const buf = Buffer.from(await file.arrayBuffer());
   const text = await extractText(file.name, buf);
   await (await templateCol()).updateOne(
