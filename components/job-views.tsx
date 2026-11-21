@@ -1,4 +1,5 @@
-import { AlertTriangle, ExternalLink, FileText, Link2 } from "lucide-react";
+import { AlertTriangle, Download, ExternalLink, FileText, Link2 } from "lucide-react";
+import { CvForm } from "@/components/job-forms";
 import type { Job, JobFile, JobLink } from "@/lib/types";
 
 const fmt = (iso?: string) => (iso ? new Date(iso).toLocaleString() : "");
@@ -12,9 +13,9 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function PreparedView({ prepared }: { prepared: NonNullable<Job["prepared"]> }) {
+export function PreparedView({ prepared, hasCv = false }: { prepared: NonNullable<Job["prepared"]>; hasCv?: boolean }) {
   const empty =
-    !prepared.notes && !prepared.coverLetter && !prepared.cvUrl && !prepared.fields?.length && !prepared.files?.length && !prepared.links?.length;
+    !hasCv && !prepared.notes && !prepared.coverLetter && !prepared.cvUrl && !prepared.fields?.length && !prepared.files?.length && !prepared.links?.length;
   if (empty) {
     return (
       <div className="flex items-start gap-2 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-sm text-red-300">
@@ -128,5 +129,63 @@ export function AttachmentsView({ job }: { job: Job }) {
         })}
       </div>
     </details>
+  );
+}
+
+// ---------- The customised CV saved with this job (always visible, any stage) ----------
+export function JobCvBox({ job }: { job: Job }) {
+  const cv = job.cv;
+  return (
+    <div className="space-y-3 rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-medium text-accent">Customised CV for this job</p>
+        {cv && (cv.file || cv.text || cv.link) && (
+          <a href={`/api/jobs/${job.id}/cv`} className="inline-flex items-center gap-1.5 rounded-lg border border-accent/40 px-3 py-1 text-xs text-accent hover:bg-accent/10">
+            <Download size={13} /> Download CV
+          </a>
+        )}
+      </div>
+
+      {cv ? (
+        <div className="space-y-2 text-xs">
+          {cv.file && (
+            <p className="flex items-center gap-1.5"><FileText size={13} className="shrink-0 text-accent" /><a href={`/api/job-files/${cv.file.id}`} target="_blank" className="break-all text-accent hover:underline">{cv.file.name}</a><span className="text-muted">({Math.max(1, Math.round(cv.file.size / 1024))} KB)</span></p>
+          )}
+          {cv.link && (
+            <p className="flex items-center gap-1.5"><Link2 size={13} className="shrink-0 text-accent" /><a href={cv.link} target="_blank" rel="noreferrer" className="break-all text-accent hover:underline">{cv.link}</a></p>
+          )}
+          {cv.text && (
+            <details>
+              <summary className="cursor-pointer text-muted hover:text-foreground">View saved CV text</summary>
+              <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-lg bg-black/30 p-3 text-xs">{cv.text}</pre>
+            </details>
+          )}
+          {cv.note && <p className="text-muted">Customised: {cv.note}</p>}
+          <p className="text-muted">Saved {fmt(cv.at)}</p>
+        </div>
+      ) : (
+        <p className="text-xs text-muted">No CV saved for this job yet. Save it here so it can be found again when applying and for interview prep.</p>
+      )}
+
+      <details>
+        <summary className="cursor-pointer text-xs font-medium">{cv ? "Replace / update the CV" : "Save the CV"}</summary>
+        <CvForm jobId={job.id} hasCv={!!cv} />
+      </details>
+
+      {job.cvHistory.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-xs text-muted hover:text-foreground">Previous versions ({job.cvHistory.length})</summary>
+          <ul className="mt-2 space-y-1.5 text-xs">
+            {[...job.cvHistory].reverse().map((h, i) => (
+              <li key={i} className="text-muted">
+                {fmt(h.at)} ·{" "}
+                {h.file ? <a href={`/api/job-files/${h.file.id}`} target="_blank" className="text-accent hover:underline">{h.file.name}</a> : h.link ? <a href={h.link} target="_blank" className="text-accent hover:underline">link</a> : "text only"}
+                {h.note ? ` · ${h.note}` : ""}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
   );
 }

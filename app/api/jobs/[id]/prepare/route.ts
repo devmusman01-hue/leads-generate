@@ -24,7 +24,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     const other = pickFiles(fd, "other");
 
     if (totalSize([...cv, ...other]) > MAX_TOTAL) return err("Files are too large (max 4 MB in total).");
-    if (!notes && !coverLetter && !cvUrl && !fields.length && !links.length && !cv.length && !other.length) {
+    if (!job.cv && !notes && !coverLetter && !cvUrl && !fields.length && !links.length && !cv.length && !other.length) {
       return err("Add what you prepared (cover letter, notes, form fields, or the CV) before submitting.");
     }
 

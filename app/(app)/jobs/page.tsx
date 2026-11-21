@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/status-badge";
 import { approveJob, deleteJob, sendBack } from "@/actions/jobs";
 import { AppliedForm, PrepareForm } from "@/components/job-forms";
-import { AppliedView, AttachmentsView, PreparedView } from "@/components/job-views";
+import { AppliedView, AttachmentsView, JobCvBox, PreparedView } from "@/components/job-views";
 import { Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/submit-button";
 import { AutoRefresh } from "@/components/auto-refresh";
@@ -87,6 +87,8 @@ async function JobList({ searchParams }: { searchParams: Promise<SP> }) {
               </div>
             </div>
 
+            <JobCvBox job={j} />
+
             {j.status === "added" && (
               <details className="rounded-xl border border-white/10 p-4 text-sm">
                 <summary className="cursor-pointer text-xs font-medium">Prepare application → send for approval</summary>
@@ -94,14 +96,14 @@ async function JobList({ searchParams }: { searchParams: Promise<SP> }) {
               </details>
             )}
 
-            {j.status === "waiting_for_approval" && j.prepared && <PreparedView prepared={j.prepared} />}
+            {j.status === "waiting_for_approval" && j.prepared && <PreparedView prepared={j.prepared} hasCv={!!j.cv} />}
 
             {j.status === "approved" && (
               <>
                 {j.prepared && (
                   <details className="text-sm">
                     <summary className="cursor-pointer text-xs text-muted hover:text-foreground">Approved application (what was prepared)</summary>
-                    <div className="mt-3"><PreparedView prepared={j.prepared} /></div>
+                    <div className="mt-3"><PreparedView prepared={j.prepared} hasCv={!!j.cv} /></div>
                   </details>
                 )}
                 <details open className="rounded-xl border border-emerald-400/20 p-4 text-sm">
@@ -117,7 +119,7 @@ async function JobList({ searchParams }: { searchParams: Promise<SP> }) {
                 {j.prepared && (
                   <details className="text-sm">
                     <summary className="cursor-pointer text-xs text-muted hover:text-foreground">What was prepared before applying</summary>
-                    <div className="mt-3"><PreparedView prepared={j.prepared} /></div>
+                    <div className="mt-3"><PreparedView prepared={j.prepared} hasCv={!!j.cv} /></div>
                   </details>
                 )}
               </>

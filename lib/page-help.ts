@@ -33,8 +33,9 @@ export const HELP = {
         "Applied: you applied and marked it as applied.",
       ] },
       { heading: "What you do here", items: [
-        "On an Added job: open 'Prepare application → send for approval' and record everything: notes, the cover letter or answers, every application form field with the value you will enter, and the customised CV (upload the file or paste a link). Submit is rejected if nothing is recorded.",
-        "On an Approved job: apply on the platform using the job URL, then fill the 'After applying' report: how you applied, the confirmation message or reference, how the CV was attached, and screenshots as proof. A report without proof is rejected. This is how the owner verifies the application really happened.",
+        "First save the job's customised CV in the 'Customised CV for this job' box on the card: upload the file, or if you cannot upload, paste the full CV text (or a link). It stays saved with the job, so you (and the owner) can always download it later. You can replace it at any stage.",
+        "Then open 'Prepare application → send for approval' and record everything else: notes, the cover letter or answers, every application form field with the value you will enter, other files and links. Submit is rejected if nothing is recorded.",
+        "On an Approved job: download the saved CV from the card's 'Customised CV for this job' box (Download CV), apply on the platform using the job URL, then fill the 'After applying' report: how you applied, the confirmation message or reference, how the CV was attached, and screenshots as proof. A report without proof is rejected. This is how the owner verifies the application really happened.",
         "Never apply to a job that is not Approved. Do not click Approve yourself. That is the owner's decision.",
         "Every file and link attached at any stage (when added, prepared, applied) is listed under 'Files & links' on the card, with the stage it came from. Attach everything you use so the owner can verify it.",
         "Open 'Details & history' on a card to see the full description, custom fields, and what happened and when.",

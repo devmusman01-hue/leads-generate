@@ -112,7 +112,7 @@ export function Label({ children, hint }: { children: React.ReactNode; hint?: st
 }
 
 export function PrepareForm({ jobId }: { jobId: string }) {
-  const { busy, error, submit } = useSubmit(`/api/jobs/${jobId}/prepare`, ["cv", "other"]);
+  const { busy, error, submit } = useSubmit(`/api/jobs/${jobId}/prepare`, ["other"]);
   const [fields, setFields] = useState<number[]>([1]);
   const [links, setLinks] = useState<number[]>([]);
   return (
@@ -128,11 +128,6 @@ export function PrepareForm({ jobId }: { jobId: string }) {
       <div className="space-y-1.5">
         <Label hint="Every field you will fill in on the application form, with the value you will enter.">Application form fields</Label>
         <FieldRows rows={fields} setRows={setFields} keyPh="Field (e.g. Expected salary)" valPh="Value" />
-      </div>
-      <div className="space-y-1.5">
-        <Label hint="Upload the customised CV (max 4 MB in total), or paste a link.">Customised CV</Label>
-        <input type="file" name="cv" multiple accept=".pdf,.doc,.docx" className={FILE_CLS} />
-        <Input name="cvUrl" placeholder="…or a link to the CV" />
       </div>
       <div className="space-y-1.5">
         <Label hint="Anything else you will attach or use: portfolio files, certificates, extra documents.">Other files</Label>
@@ -190,6 +185,34 @@ export function AppliedForm({ jobId }: { jobId: string }) {
       {error && <p className="text-sm text-red-400">{error}</p>}
       <Button variant="success" size="sm" disabled={busy}>
         {busy && <Loader2 size={14} className="animate-spin" />} Report as applied
+      </Button>
+    </form>
+  );
+}
+
+export function CvForm({ jobId, hasCv }: { jobId: string; hasCv: boolean }) {
+  const { busy, error, submit } = useSubmit(`/api/jobs/${jobId}/cv`, ["file"], (form) => form.reset());
+  return (
+    <form onSubmit={submit} className="mt-3 space-y-3">
+      <div className="space-y-1.5">
+        <Label hint="Upload the finished CV for this job (PDF/DOCX, max 4 MB).">CV file</Label>
+        <input type="file" name="file" accept=".pdf,.doc,.docx" className={FILE_CLS} />
+      </div>
+      <div className="space-y-1.5">
+        <Label hint="Can't upload a file? Paste the full CV text here and it is saved with the job.">…or CV text</Label>
+        <Textarea name="text" className="min-h-28" placeholder="Paste the full customised CV text" />
+      </div>
+      <div className="space-y-1.5">
+        <Label>…or a link</Label>
+        <Input name="link" placeholder="https://…" />
+      </div>
+      <div className="space-y-1.5">
+        <Label>What was customised (optional)</Label>
+        <Input name="note" placeholder="e.g. Reordered skills for React, rewrote summary" />
+      </div>
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      <Button variant="glass" size="sm" disabled={busy}>
+        {busy && <Loader2 size={14} className="animate-spin" />} {hasCv ? "Replace CV" : "Save CV"}
       </Button>
     </form>
   );

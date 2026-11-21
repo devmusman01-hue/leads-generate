@@ -2,6 +2,7 @@ import type { JobStatus } from "./status";
 
 export type JobFile = { id: string; name: string; kind: "cv" | "proof" | "attachment"; contentType: string; size: number };
 
+export type JobCv = { file: JobFile | null; text: string; link: string; note: string; at: string };
 export type JobLink = { label: string; url: string };
 
 export type Job = {
@@ -34,6 +35,8 @@ export type Job = {
     at: string;
   } | null;
   attachments: { files: JobFile[]; links: JobLink[] } | null;
+  cv: JobCv | null;
+  cvHistory: JobCv[];
   extra: Record<string, unknown>;
   history: { status: JobStatus; at: string; note?: string }[];
   createdAt: string;
