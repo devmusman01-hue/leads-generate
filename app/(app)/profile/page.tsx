@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Plus, Save, Trash2, UserRound } from "lucide-react";
+import { Download, Plus, Save, Trash2, UserRound } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@/components/ui/card";
 import { SubmitButton } from "@/components/submit-button";
@@ -92,7 +92,11 @@ async function Sections() {
 export default function ProfilePage() {
   return (
     <>
-      <PageHeader icon={UserRound} help="profile" title="Profile" subtitle="Everything your agent knows about you, organised in sections you define." />
+      <PageHeader
+        icon={UserRound}
+        help="profile"
+        actions={<form action={A.importStarterProfile}><SubmitButton size="sm" pendingText="Importing…"><Download size={14} /> Import from CV</SubmitButton></form>}
+        title="Profile" subtitle="Everything your agent knows about you, organised in sections you define." />
       <Card className="mb-6">
         <form action={A.createSection} className="flex flex-wrap gap-2">
           <Input name="name" placeholder="New section name (e.g. Personal Information)" className="max-w-sm" required />

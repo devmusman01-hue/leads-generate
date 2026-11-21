@@ -6,6 +6,7 @@ import { isAuthed } from "@/lib/auth";
 import { oid } from "@/lib/jobs";
 import { sectionsCol } from "@/lib/profile";
 import { focusCol } from "@/lib/focus";
+import { CV_SECTIONS } from "@/lib/cv-seed";
 
 async function ctx(formData: FormData) {
   if (!(await isAuthed())) throw new Error("Unauthorized");
@@ -127,4 +128,36 @@ export async function saveFocusNotes(formData: FormData) {
   await authed();
   await (await focusCol()).updateOne({ _id: "focus" as never }, { $set: { notes: String(formData.get("notes") ?? "").trim() } }, { upsert: true });
   revalidatePath("/profile");
+}
+
+// ---------- One-click import of the starter profile (idempotent) ----------
+export async function importStarterProfile() {
+  await authed();
+  const col = await sectionsCol();
+  const norm = (x: string) => x.trim().toLowerCase();
+  let order = Date.now();
+  for (const s of CV_SECTIONS) {
+    const existing = await col.findOne({ name: s.name });
+    if (!existing) {
+      await col.insertOne({
+        name: s.name,
+        type: s.type,
+        fields: (s.fields ?? []).map((f) => ({ id: randomUUID(), ...f })),
+        items: (s.items ?? []).map((i) => ({ id: randomUUID(), ...i })),
+        order: order++,
+      });
+      continue;
+    }
+    if (existing.type !== s.type) continue;
+    if (s.type === "fields") {
+      const have = new Set((existing.fields ?? []).map((f: { label: string }) => norm(f.label)));
+      const add = (s.fields ?? []).filter((f) => !have.has(norm(f.label))).map((f) => ({ id: randomUUID(), ...f }));
+      if (add.length) await col.updateOne({ _id: existing._id }, { $push: { fields: { $each: add } } } as never);
+    } else {
+      const have = new Set((existing.items ?? []).map((i: { title: string }) => norm(i.title)));
+      const add = (s.items ?? []).filter((i) => !have.has(norm(i.title))).map((i) => ({ id: randomUUID(), ...i }));
+      if (add.length) await col.updateOne({ _id: existing._id }, { $push: { items: { $each: add } } } as never);
+    }
+  }
+  done();
 }
