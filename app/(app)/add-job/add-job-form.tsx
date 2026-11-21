@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Plus, X } from "lucide-react";
-import { addJob, type AddJobResult } from "@/actions/jobs";
+import { Check, Loader2, Plus, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SubmitButton } from "@/components/submit-button";
+import { FILE_CLS, Label, LinkRows, useSubmit } from "@/components/job-forms";
 
 const SUGGESTIONS = ["Job type", "Experience", "Deadline", "Contact email", "Remote / On-site", "Tech stack", "Notes"];
 type Row = { id: number; label: string };
@@ -14,21 +13,23 @@ type Row = { id: number; label: string };
 export function AddJobForm({ platforms }: { platforms: string[] }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [nextId, setNextId] = useState(1);
-  const [result, setResult] = useState<AddJobResult>();
+  const [links, setLinks] = useState<number[]>([]);
+  const [ok, setOk] = useState("");
+
+  const { busy, error, submit } = useSubmit("/api/jobs", ["files"], (form) => {
+    form.reset();
+    setRows([]);
+    setLinks([]);
+    setOk("Job added.");
+  });
 
   function addRow(label = "") {
     setRows((r) => [...r, { id: nextId, label }]);
     setNextId((n) => n + 1);
   }
 
-  async function action(formData: FormData) {
-    const r = await addJob(undefined, formData);
-    setResult(r);
-    if (r?.ok) setRows([]); // React resets the inputs itself after the action completes
-  }
-
   return (
-    <form action={action} className="grid items-start gap-5 xl:grid-cols-2">
+    <form onSubmit={(e) => { setOk(""); return submit(e); }} className="grid items-start gap-5 xl:grid-cols-2">
       <Card className="space-y-4">
         <div>
           <p className="text-sm font-semibold">Job details</p>
@@ -46,36 +47,53 @@ export function AddJobForm({ platforms }: { platforms: string[] }) {
         </div>
       </Card>
 
-      <Card className="space-y-4">
-        <div>
-          <p className="text-sm font-semibold">Custom fields</p>
-          <p className="mt-1 text-xs text-muted">Add any extra detail with your own label — different for every job.</p>
-        </div>
-        <div className="space-y-3">
-          {rows.map((r) => (
-            <div key={r.id} className="flex flex-col gap-2 sm:flex-row">
-              <Input name="cfKey" defaultValue={r.label} placeholder="Field name" className="sm:w-56 sm:shrink-0" />
-              <Input name="cfValue" placeholder="Value" />
-              <Button type="button" variant="ghost" size="icon" onClick={() => setRows((x) => x.filter((y) => y.id !== r.id))} aria-label="Remove field">
-                <X size={14} />
-              </Button>
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="glass" size="sm" onClick={() => addRow()}><Plus size={14} /> Add field</Button>
-          {SUGGESTIONS.map((s) => (
-            <button key={s} type="button" onClick={() => addRow(s)} className="cursor-pointer rounded-full border border-white/10 px-3 py-1 text-xs text-muted transition-colors hover:bg-white/10 hover:text-foreground">
-              + {s}
-            </button>
-          ))}
-        </div>
-      </Card>
+      <div className="space-y-5">
+        <Card className="space-y-4">
+          <div>
+            <p className="text-sm font-semibold">Custom fields</p>
+            <p className="mt-1 text-xs text-muted">Add any extra detail with your own label — different for every job.</p>
+          </div>
+          <div className="space-y-3">
+            {rows.map((r) => (
+              <div key={r.id} className="flex flex-col gap-2 sm:flex-row">
+                <Input name="cfKey" defaultValue={r.label} placeholder="Field name" className="sm:w-56 sm:shrink-0" />
+                <Input name="cfValue" placeholder="Value" />
+                <Button type="button" variant="ghost" size="icon" onClick={() => setRows((x) => x.filter((y) => y.id !== r.id))} aria-label="Remove field">
+                  <X size={14} />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="glass" size="sm" onClick={() => addRow()}><Plus size={14} /> Add field</Button>
+            {SUGGESTIONS.map((s) => (
+              <button key={s} type="button" onClick={() => addRow(s)} className="cursor-pointer rounded-full border border-white/10 px-3 py-1 text-xs text-muted transition-colors hover:bg-white/10 hover:text-foreground">
+                + {s}
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="space-y-4">
+          <div>
+            <p className="text-sm font-semibold">Files & links</p>
+            <p className="mt-1 text-xs text-muted">Attach anything related to the job. It stays visible on the job card so it can be cross-checked.</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label hint="Job description PDF, screenshot of the posting, etc. (max 4 MB in total)">Files</Label>
+            <input type="file" name="files" multiple className={FILE_CLS} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Links</Label>
+            <LinkRows rows={links} setRows={setLinks} />
+          </div>
+        </Card>
+      </div>
 
       <div className="flex flex-wrap items-center gap-4 xl:col-span-2">
-        <SubmitButton pendingText="Adding…">Add job</SubmitButton>
-        {result?.ok && <p className="flex items-center gap-1.5 text-sm text-emerald-400"><Check size={14} /> {result.ok}</p>}
-        {result?.error && <p className="text-sm text-red-400">{result.error}</p>}
+        <Button disabled={busy}>{busy && <Loader2 size={14} className="animate-spin" />} Add job</Button>
+        {ok && <p className="flex items-center gap-1.5 text-sm text-emerald-400"><Check size={14} /> {ok}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
       </div>
     </form>
   );

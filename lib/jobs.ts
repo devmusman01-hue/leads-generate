@@ -20,6 +20,8 @@ export function toJob(d: Document): Job {
     description: d.description ?? "",
     status: d.status as JobStatus,
     prepared: d.prepared ?? null,
+    applied: d.applied ?? null,
+    attachments: d.attachments ?? null,
     extra: d.extra ?? {},
     history: (d.history ?? []).map((h: Document) => ({ status: h.status, at: iso(h.at), note: h.note })),
     createdAt: iso(d.createdAt),

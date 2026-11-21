@@ -33,9 +33,10 @@ export const HELP = {
         "Applied: you applied and marked it as applied.",
       ] },
       { heading: "What you do here", items: [
-        "On an Added job: open 'Prepare application → send for approval', write notes, the cover letter or answers, and a link to the customised CV, then click Submit for approval.",
-        "On an Approved job: apply on the platform using the job URL, then click Mark applied.",
+        "On an Added job: open 'Prepare application → send for approval' and record everything: notes, the cover letter or answers, every application form field with the value you will enter, and the customised CV (upload the file or paste a link). Submit is rejected if nothing is recorded.",
+        "On an Approved job: apply on the platform using the job URL, then fill the 'After applying' report: how you applied, the confirmation message or reference, how the CV was attached, and screenshots as proof. A report without proof is rejected. This is how the owner verifies the application really happened.",
         "Never apply to a job that is not Approved. Do not click Approve yourself. That is the owner's decision.",
+        "Every file and link attached at any stage (when added, prepared, applied) is listed under 'Files & links' on the card, with the stage it came from. Attach everything you use so the owner can verify it.",
         "Open 'Details & history' on a card to see the full description, custom fields, and what happened and when.",
       ] },
       { heading: "Finding jobs", items: [
@@ -57,6 +58,7 @@ export const HELP = {
         "Fill in whatever the job has: title, company, platform, URL, location, salary, description. Leave the rest empty.",
         "Platform is where you found it (e.g. linkedin, indeed). Reuse the same spelling each time so filters and stats stay clean.",
         "For anything else (job type, deadline, contact email, tech stack…) click Add field, or one of the suggestions, and fill the name and value.",
+        "Attach related files (job description PDF, a screenshot of the posting) and any extra links in the Files & links card. Everything attached stays visible on the job for the owner to cross-check.",
         "Click Add job. It is saved with the stage 'Added' and appears on the Received with email page.",
       ] },
       { heading: "Tips", items: [

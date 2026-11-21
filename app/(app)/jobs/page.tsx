@@ -6,8 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/status-badge";
-import { approveJob, deleteJob, markAppliedManually, submitForApproval } from "@/actions/jobs";
-import { Input, Textarea } from "@/components/ui/input";
+import { approveJob, deleteJob, sendBack } from "@/actions/jobs";
+import { AppliedForm, PrepareForm } from "@/components/job-forms";
+import { AppliedView, AttachmentsView, PreparedView } from "@/components/job-views";
+import { Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/submit-button";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { jobsCol, toJob } from "@/lib/jobs";
@@ -85,29 +87,43 @@ async function JobList({ searchParams }: { searchParams: Promise<SP> }) {
               </div>
             </div>
 
-            {j.status !== "added" && j.prepared && (
-              <div className="space-y-2 rounded-xl border border-amber-400/20 bg-amber-400/5 p-4 text-sm">
-                <p className="text-xs font-medium text-amber-300">Prepared application</p>
-                {j.prepared.notes && <p className="whitespace-pre-wrap text-muted">{j.prepared.notes}</p>}
-                {j.prepared.coverLetter && <p className="whitespace-pre-wrap">{j.prepared.coverLetter}</p>}
-                {j.prepared.cvUrl && (
-                  <a href={j.prepared.cvUrl} target="_blank" className="inline-flex items-center gap-1 text-xs text-accent">Customized CV <ExternalLink size={12} /></a>
-                )}
-              </div>
-            )}
-
             {j.status === "added" && (
-              <details className="border border-white/10 p-4 text-sm">
+              <details className="rounded-xl border border-white/10 p-4 text-sm">
                 <summary className="cursor-pointer text-xs font-medium">Prepare application → send for approval</summary>
-                <form action={submitForApproval} className="mt-3 space-y-2">
-                  <input type="hidden" name="id" value={j.id} />
-                  <Textarea name="notes" placeholder="Notes (what was customised, anything to check)" />
-                  <Textarea name="coverLetter" placeholder="Cover letter / answers prepared" />
-                  <Input name="cvUrl" placeholder="Customised CV link (optional)" />
-                  <SubmitButton variant="glass" size="sm" pendingText="Submitting…">Submit for approval</SubmitButton>
-                </form>
+                <PrepareForm jobId={j.id} />
               </details>
             )}
+
+            {j.status === "waiting_for_approval" && j.prepared && <PreparedView prepared={j.prepared} />}
+
+            {j.status === "approved" && (
+              <>
+                {j.prepared && (
+                  <details className="text-sm">
+                    <summary className="cursor-pointer text-xs text-muted hover:text-foreground">Approved application (what was prepared)</summary>
+                    <div className="mt-3"><PreparedView prepared={j.prepared} /></div>
+                  </details>
+                )}
+                <details open className="rounded-xl border border-emerald-400/20 p-4 text-sm">
+                  <summary className="cursor-pointer text-xs font-medium text-emerald-300">After applying: report how it went</summary>
+                  <AppliedForm jobId={j.id} />
+                </details>
+              </>
+            )}
+
+            {j.status === "applied" && (
+              <>
+                {j.applied ? <AppliedView applied={j.applied} /> : <p className="text-xs text-muted">Marked applied without a report.</p>}
+                {j.prepared && (
+                  <details className="text-sm">
+                    <summary className="cursor-pointer text-xs text-muted hover:text-foreground">What was prepared before applying</summary>
+                    <div className="mt-3"><PreparedView prepared={j.prepared} /></div>
+                  </details>
+                )}
+              </>
+            )}
+
+            <AttachmentsView job={j} />
 
             <details className="text-sm">
               <summary className="cursor-pointer text-xs text-muted hover:text-foreground">Details & history</summary>
@@ -138,16 +154,17 @@ async function JobList({ searchParams }: { searchParams: Promise<SP> }) {
                 </a>
               )}
               {j.status === "waiting_for_approval" && (
-                <form action={approveJob}>
-                  <input type="hidden" name="id" value={j.id} />
-                  <SubmitButton variant="success" size="sm" pendingText="Approving…">Approve</SubmitButton>
-                </form>
-              )}
-              {j.status === "approved" && (
-                <form action={markAppliedManually}>
-                  <input type="hidden" name="id" value={j.id} />
-                  <SubmitButton variant="outline" size="sm" pendingText="Saving…">Mark applied</SubmitButton>
-                </form>
+                <>
+                  <form action={approveJob}>
+                    <input type="hidden" name="id" value={j.id} />
+                    <SubmitButton variant="success" size="sm" pendingText="Approving…">Approve</SubmitButton>
+                  </form>
+                  <form action={sendBack} className="flex gap-2">
+                    <input type="hidden" name="id" value={j.id} />
+                    <Input name="reason" placeholder="Why send back? (optional)" className="h-9 w-44" />
+                    <SubmitButton variant="outline" size="sm" pendingText="Sending…">Send back</SubmitButton>
+                  </form>
+                </>
               )}
               <form action={deleteJob} className="ml-auto">
                 <input type="hidden" name="id" value={j.id} />
