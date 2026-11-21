@@ -18,14 +18,22 @@ export function TemplateUpload() {
     e.preventDefault();
     setBusy(true);
     setMsg(null);
-    const res = await fetch("/api/template", { method: "POST", body: new FormData(e.currentTarget) });
-    const j = await res.json().catch(() => ({}));
+    let res: Response | undefined;
+    let j: { error?: string; filename?: string; extracted?: boolean } = {};
+    try {
+      res = await fetch("/api/template", { method: "POST", body: new FormData(e.currentTarget) });
+      j = await res.json().catch(() => ({}));
+    } catch {
+      setBusy(false);
+      setMsg({ ok: false, text: "Network error. Could not reach the server." });
+      return;
+    }
     setBusy(false);
     if (res.ok) {
-      setMsg({ ok: true, text: j.extracted ? "Uploaded. Text and placeholders extracted for the agent." : "Uploaded. (No readable text extracted from this file type.)" });
+      setMsg({ ok: true, text: `Uploaded ${j.filename ?? "file"}. ${j.extracted ? "Text and placeholders extracted for the agent." : "No readable text extracted from this file type (DOCX works best)."}` });
       ref.current?.reset();
       router.refresh();
-    } else setMsg({ ok: false, text: j.error ?? "Upload failed" });
+    } else setMsg({ ok: false, text: j.error ?? `Upload failed (HTTP ${res.status})` });
   }
 
   return (
